@@ -1,0 +1,95 @@
+name: Docker build
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  workflow_dispatch:
+#  schedule:
+#    - cron: '35 8 * * *'
+  push:
+    branches: [ main ]
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Show disk usage
+        run: |
+          df -h
+  
+      - name: Aggressive cleanup
+        run: |
+         # Remove Java (JDKs)
+          sudo rm -rf /usr/lib/jvm && echo jvm deleted
+          # Remove .NET SDKs
+          sudo rm -rf /usr/share/dotnet && echo dotnet deleted
+          # Remove Swift toolchain
+          sudo rm -rf /usr/share/swift && echo swift deleted
+          # Remove Haskell (GHC)
+          sudo rm -rf /usr/local/.ghcup  && echo GHC deleted
+          # Remove Julia
+          sudo rm -rf /usr/local/julia* && echo julia deleted
+          # Remove Android SDKs
+          sudo rm -rf /usr/local/lib/android && echo android deletd
+          # Remove Chromium (optional if not using for browser tests)
+          sudo rm -rf /usr/local/share/chromium && echo chromium deleted
+          # Remove Microsoft/Edge and Google Chrome builds
+          sudo rm -rf /opt/microsoft /opt/google && echo edge and chrome deleted
+          # Remove Azure CLI
+          sudo rm -rf /opt/az && echo azure deleted
+          # Remove PowerShell
+          sudo rm -rf /usr/local/share/powershell && echo powershell deleted
+          # Remove CodeQL and other toolcaches
+          sudo rm -rf /opt/hostedtoolcache && echo misc deleted
+          df -h
+  
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
