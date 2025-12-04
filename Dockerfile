@@ -50,9 +50,9 @@ RUN git clone --branch v3.3.0 --single-branch https://github.com/soedinglab/hh-s
     && rm -rf /tmp/hh-suite
 
 # Install Miniconda package manager.
-RUN wget -q -P /tmp \
+RUN wget -q  \
   "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
-  -O Miniforge.sh \
+  -O /tmp/Miniforge.sh \
     && bash /tmp/Miniforge.sh -b -p /opt/conda \
     && rm /tmp/Miniforge.sh
 
