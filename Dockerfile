@@ -64,7 +64,8 @@ RUN conda install --quiet --yes conda==24.11.1 pip python=3.11 \
     && conda install --quiet --yes --channel conda-forge openmm=8.0.0 pdbfixer \
     && conda clean --all --force-pkgs-dirs --yes
 
-RUN mkdir /app && cd /app && git clone https://github.com/google-deepmind/alphafold.git
+RUN mkdir /app && cd /app && git clone https://github.com/truatpasteurdotfr/alphafold.git
+RUN (cd /app/alphafold && git checkout jax-softmax)
 RUN wget -q -P /app/alphafold/alphafold/common/ \
   https://git.scicore.unibas.ch/schwede/openstructure/-/raw/7102c63615b64735c4941278d92b554ec94415f8/modules/mol/alg/src/stereo_chemical_props.txt
 
