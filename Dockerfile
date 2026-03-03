@@ -71,7 +71,8 @@ RUN wget -q -P /app/alphafold/alphafold/common/ \
 
 # Install pip packages.
 RUN pip3 install --upgrade pip --no-cache-dir \
-    && sed -i -e 's/numpy==1.21.6/numpy==1.24.3/g' /app/alphafold/requirements.txt \
+    && sed -i -e 's/numpy==1.21.6/numpy==1.24.3/g;s/dm-haiku==0.0.9/dm-haiku==0.0.12/g;s/tensorflow-cpu==2.11.0/tensorflow-cpu==2.16.1/g;/chex==0.0.7/d;/dm-haiku==0.0.9/d;/dm-tree==0.1.6/d;/immutabledict==2.0.0/d;/pandas==1.3.4/d;/scipy==1.7.0/d;s/jax==0.3.25/jax==0.4.26/g;' /app/alphafold/requirements.txt \
+    && for i in  'matplotlib==3.8.0'  'pytest<8.5.0' 'setuptools<72.0.0'  ; do echo "$i" >> /app/alphafold/requirements.txt ; done \
     && pip3 install -r /app/alphafold/requirements.txt --no-cache-dir \
     && pip3 install --upgrade --no-cache-dir \
       jax==0.4.26 \
