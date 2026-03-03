@@ -71,7 +71,8 @@ RUN wget -q -P /app/alphafold/alphafold/common/ \
 
 # Install pip packages.
 RUN pip3 install --upgrade pip --no-cache-dir \
-    && pip3 install numpy==1.24.3 -r /app/alphafold/requirements.txt --no-cache-dir \
+    && sed -i -e 's/numpy==1.21.6/numpy==1.24.3/g' /app/alphafold/requirements.txt \
+    && pip3 install -r /app/alphafold/requirements.txt --no-cache-dir \
     && pip3 install --upgrade --no-cache-dir \
       jax==0.4.26 \
       jaxlib==0.4.26+cuda12.cudnn89 \
