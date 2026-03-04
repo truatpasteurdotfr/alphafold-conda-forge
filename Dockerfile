@@ -15,7 +15,7 @@
 #https://hub.docker.com/r/nvidia/cuda/tags
 #https://storage.googleapis.com/jax-releases/cuda111 jaxlib ==1.69
 
-ARG CUDA=12.2.2
+ARG CUDA=11.1.1
 FROM nvidia/cuda:${CUDA}-cudnn8-runtime-ubuntu20.04
 # FROM directive resets ARGS, so we specify again (the value is retained if
 # previously set).
@@ -64,20 +64,16 @@ RUN conda install --quiet --yes conda==24.11.1 pip python=3.11 \
     && conda install --quiet --yes --channel conda-forge openmm=8.0.0 pdbfixer \
     && conda clean --all --force-pkgs-dirs --yes
 
-RUN mkdir /app && cd /app && git clone https://github.com/google-deepmind/alphafold.git
-RUN (cd /app/alphafold && git checkout v2.3.2)
+RUN mkdir /app && cd /app && git clone --branch v2.3.2 --single-branch https://github.com/google-deepmind/alphafold.git
 RUN wget -q -P /app/alphafold/alphafold/common/ \
   https://git.scicore.unibas.ch/schwede/openstructure/-/raw/7102c63615b64735c4941278d92b554ec94415f8/modules/mol/alg/src/stereo_chemical_props.txt
 
 # Install pip packages.
 RUN pip3 install --upgrade pip --no-cache-dir \
-    && sed -i -e 's/numpy==1.21.6/numpy==1.24.3/g;s/dm-haiku==0.0.9/dm-haiku==0.0.12/g;s/tensorflow-cpu==2.11.0/tensorflow-cpu==2.16.1/g;/chex==0.0.7/d;/dm-haiku==0.0.9/d;/dm-tree==0.1.6/d;/immutabledict==2.0.0/d;/pandas==1.3.4/d;/scipy==1.7.0/d;s/jax==0.3.25/jax==0.4.26/g;' /app/alphafold/requirements.txt \
-    && for i in  'matplotlib==3.8.0'  'pytest<8.5.0' 'setuptools<72.0.0'  ; do echo "$i" >> /app/alphafold/requirements.txt ; done \
-    && for i in /app/alphafold/alphafold/model/tf/input_pipeline.py /app/alphafold/alphafold/model/r3.py /app/alphafold/alphafold/model/model.py /app/alphafold/alphafold/common/residue_constants.py; do sed -i -e 's/^import tree/from jax import tree/g' $i; done \
     && pip3 install -r /app/alphafold/requirements.txt --no-cache-dir \
     && pip3 install --upgrade --no-cache-dir \
-      jax==0.4.26 \
-      jaxlib==0.4.26+cuda12.cudnn89 \
+      jax==0.3.25 \
+      jaxlib==0.3.25+cuda11.cudnn805 \
       -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
 # Add SETUID bit to the ldconfig binary so that non-root users can run it.
