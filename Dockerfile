@@ -60,8 +60,7 @@ RUN wget -q  \
 ENV PATH="/opt/conda/bin:$PATH"
 ENV LD_LIBRARY_PATH="/opt/conda/lib:$LD_LIBRARY_PATH"
 RUN conda install --quiet --yes conda==4.13 pip python=3.8 \
-    && conda install --quiet --yes --channel nvidia cuda=${CUDA_VERSION} \
-    && conda install --quiet --yes --channel conda-forge openmm=7.5.1 pdbfixer \
+    && conda install --quiet --yes cudatoolkit=${CUDA_VERSION} openmm=7.5.1 pdbfixer \
     && conda clean --all --force-pkgs-dirs --yes
 
 RUN mkdir /app && cd /app && git clone --branch v2.3.2 --single-branch https://github.com/google-deepmind/alphafold.git
