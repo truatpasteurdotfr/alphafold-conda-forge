@@ -69,6 +69,7 @@ RUN wget -q -P /app/alphafold/alphafold/common/ \
 
 # Install pip packages.
 RUN pip3 install --upgrade pip --no-cache-dir \
+    && sed -i -e '/chex==0.0.7/d;' /app/alphafold/requirements.txt \
     && pip3 install -r /app/alphafold/requirements.txt --no-cache-dir \
     && pip3 install --upgrade --no-cache-dir \
       jax==0.3.25 \
