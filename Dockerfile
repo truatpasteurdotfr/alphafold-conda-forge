@@ -78,7 +78,7 @@ RUN pip3 install --upgrade pip --no-cache-dir \
 
 # Apply OpenMM patch.
 WORKDIR /opt/conda/lib/python3.8/site-packages
-RUN curl -L https://raw.githubusercontent.com/google-deepmind/alphafold/refs/tags/v2.3.2/docker/openmm.patch | patch -p0 -
+RUN wget -O - https://raw.githubusercontent.com/google-deepmind/alphafold/refs/tags/v2.3.2/docker/openmm.patch | patch -p0 -
 
 # Add SETUID bit to the ldconfig binary so that non-root users can run it.
 RUN chmod u+s /sbin/ldconfig.real
