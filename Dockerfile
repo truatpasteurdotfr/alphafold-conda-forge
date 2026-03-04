@@ -14,7 +14,7 @@
 
 #https://hub.docker.com/r/nvidia/cuda/tags
 #https://storage.googleapis.com/jax-releases/cuda111 jaxlib ==1.69
-
+# Tru: using ubuntu 20.04 as 18.04 is EOL
 ARG CUDA=11.1.1
 FROM nvidia/cuda:${CUDA}-cudnn8-runtime-ubuntu20.04
 # FROM directive resets ARGS, so we specify again (the value is retained if
@@ -59,9 +59,9 @@ RUN wget -q  \
 # Install Conda packages.
 ENV PATH="/opt/conda/bin:$PATH"
 ENV LD_LIBRARY_PATH="/opt/conda/lib:$LD_LIBRARY_PATH"
-RUN conda install --quiet --yes conda==24.11.1 pip python=3.11 \
+RUN conda install --quiet --yes conda==4.13 pip python=3.8 \
     && conda install --quiet --yes --channel nvidia cuda=${CUDA_VERSION} \
-    && conda install --quiet --yes --channel conda-forge openmm=8.0.0 pdbfixer \
+    && conda install --quiet --yes --channel conda-forge openmm=7.5.1 pdbfixer \
     && conda clean --all --force-pkgs-dirs --yes
 
 RUN mkdir /app && cd /app && git clone --branch v2.3.2 --single-branch https://github.com/google-deepmind/alphafold.git
@@ -76,11 +76,15 @@ RUN pip3 install --upgrade pip --no-cache-dir \
       jaxlib==0.3.25+cuda11.cudnn805 \
       -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
+# Apply OpenMM patch.
+WORKDIR /opt/conda/lib/python3.8/site-packages
+RUN curl -L https://raw.githubusercontent.com/google-deepmind/alphafold/refs/tags/v2.3.2/docker/openmm.patch | patch -p0 -
+
 # Add SETUID bit to the ldconfig binary so that non-root users can run it.
 RUN chmod u+s /sbin/ldconfig.real
 
 # Currently needed to avoid undefined_symbol error.
-RUN ln -sf /usr/lib/x86_64-linux-gnu/libffi.so.7 /opt/conda/lib/libffi.so.7
+#RUN ln -sf /usr/lib/x86_64-linux-gnu/libffi.so.7 /opt/conda/lib/libffi.so.7
 
 # We need to run `ldconfig` first to ensure GPUs are visible, due to some quirk
 # with Debian. See https://github.com/NVIDIA/nvidia-docker/issues/1399 for
